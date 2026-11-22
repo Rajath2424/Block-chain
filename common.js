@@ -2,11 +2,11 @@
   Shared code for both websites:
   - MetaMask connection (ethers.js v6)
   - network check / switch
-  - settings (contract addresses + Pinata CIDs saved in the browser)
-  - toasts, transaction helper, formatting, IPFS helpers
+  - settings (contract addresses + NFT metadata files saved in the browser)
+  - toasts, transaction helper, formatting, metadata helpers
 */
 
-const STORAGE_KEY = "tranchoryx_glowrist_settings_v1";
+const STORAGE_KEY = "tranchoryx_glowrist_settings_v2";
 
 /* ---------------- Settings ---------------- */
 
@@ -80,41 +80,40 @@ const fmt = {
   }
 };
 
-/* ---------------- IPFS / Pinata ---------------- */
+/* ---------------- NFT metadata (hosted on GitHub Pages) ---------------- */
 
-function ipfsToHttp(uri) {
-  const gw = getConfig().ipfsGateway;
-  if (!uri) return "";
-  if (uri.startsWith("ipfs://")) return gw + uri.replace("ipfs://", "").replace(/^ipfs\//, "");
-  if (uri.startsWith("http")) return uri;
-  return gw + uri; // bare CID
+// Turns a file name like "glowrist-rose-reservation.json" into a full URL
+// next to this page, e.g. https://rajath2424.github.io/Block-chain/glowrist-rose-reservation.json
+// Full https:// links are kept as they are. Old ipfs:// links go through a public gateway.
+function toUrl(x) {
+  if (!x) return "";
+  x = String(x).trim();
+  if (x.startsWith("http://") || x.startsWith("https://")) return x;
+  if (x.startsWith("ipfs://")) return "https://ipfs.io/ipfs/" + x.slice(7);
+  try { return new URL(x, window.location.href).href; } catch (e) { return x; }
 }
 
-const _cidCache = {};
-// Works for a metadata JSON CID or a direct image CID.
-async function loadFromCID(cid) {
-  if (!cid) return null;
-  if (_cidCache[cid]) return _cidCache[cid];
-  const url = ipfsToHttp(cid);
+const _metaCache = {};
+// Loads an NFT metadata JSON (or a direct image link) and returns {name, image, attributes}
+async function loadMeta(link) {
+  if (!link) return null;
+  const url = toUrl(link);
+  if (_metaCache[url]) return _metaCache[url];
   const p = (async () => {
     try {
-      const res = await fetch(url);
+      const res = await fetch(url, { cache: "no-cache" });
+      if (!res.ok) return { image: "", attributes: [], failed: true };
       const type = (res.headers.get("content-type") || "").toLowerCase();
       if (type.includes("image")) return { image: url, attributes: [], isImageOnly: true };
-      const text = await res.text();
-      try {
-        const json = JSON.parse(text);
-        json.image = json.image ? ipfsToHttp(json.image) : "";
-        json.attributes = json.attributes || [];
-        return json;
-      } catch (e) {
-        return { image: url, attributes: [], isImageOnly: true };
-      }
+      const json = JSON.parse(await res.text());
+      json.image = json.image ? toUrl(json.image) : "";
+      json.attributes = json.attributes || [];
+      return json;
     } catch (e) {
-      return { image: url, attributes: [], failed: true };
+      return { image: "", attributes: [], failed: true };
     }
   })();
-  _cidCache[cid] = p;
+  _metaCache[url] = p;
   return p;
 }
 

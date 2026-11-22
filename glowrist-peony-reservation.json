@@ -1,0 +1,23 @@
+{
+  "name": "Glowrist Blush Peony - Pre-order Reservation",
+  "description": "Reservation of blush peony stems from a named GLOWRIST harvest batch. Money is held in escrow by the smart contract. Present this NFT at Glowrist, Dublin 2 to collect your flowers.",
+  "image": "https://rajath2424.github.io/Block-chain/glowrist-peony-reservation.png",
+  "attributes": [
+    {
+      "trait_type": "Shop",
+      "value": "Glowrist, Dublin 2"
+    },
+    {
+      "trait_type": "Flower",
+      "value": "Blush Peony"
+    },
+    {
+      "trait_type": "Botanical name",
+      "value": "Paeonia lactiflora"
+    },
+    {
+      "trait_type": "Type",
+      "value": "Reservation"
+    }
+  ]
+}

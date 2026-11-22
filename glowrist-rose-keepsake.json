@@ -1,0 +1,23 @@
+{
+  "name": "Glowrist Red Rose - Botanical Keepsake",
+  "description": "Keepsake of red roses collected from GLOWRIST, Dublin 2. Given after the reservation NFT is used.",
+  "image": "https://rajath2424.github.io/Block-chain/glowrist-rose-keepsake.png",
+  "attributes": [
+    {
+      "trait_type": "Shop",
+      "value": "Glowrist, Dublin 2"
+    },
+    {
+      "trait_type": "Flower",
+      "value": "Red Rose"
+    },
+    {
+      "trait_type": "Botanical name",
+      "value": "Rosa 'Grand Prix'"
+    },
+    {
+      "trait_type": "Type",
+      "value": "Keepsake"
+    }
+  ]
+}

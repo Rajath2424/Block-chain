@@ -28,7 +28,7 @@
     <a href="#grower" class="role-link hidden" data-role="grower">Grower Ledger</a>
   </nav>
   <div class="top-actions">
-    <button class="icon-btn" id="btn-settings" title="Settings: contract addresses and Pinata CIDs">⚙</button>
+    <button class="icon-btn" id="btn-settings" title="Settings: contract addresses and NFT artwork">⚙</button>
     <button class="stamp-btn" id="btn-connect">Connect MetaMask</button>
   </div>
 </header>
@@ -188,13 +188,13 @@
       </div>
       <label>Grower wallet <input name="grower" required placeholder="0x…"></label>
       <div class="row2">
-        <label>Reservation NFT art (Pinata CID)
+        <label>Reservation NFT art (metadata file)
           <select name="resCidPick" class="cid-pick" data-target="resCid"></select>
-          <input name="resCid" placeholder="or paste CID">
+          <input name="resCid" placeholder="or type file name / URL">
         </label>
-        <label>Keepsake NFT art (Pinata CID)
+        <label>Keepsake NFT art (metadata file)
           <select name="keepCidPick" class="cid-pick" data-target="keepCid"></select>
-          <input name="keepCid" placeholder="or paste CID">
+          <input name="keepCid" placeholder="or type file name / URL">
         </label>
       </div>
       <p class="calc" id="batch-calc"></p>
@@ -262,7 +262,7 @@
   <div class="modal-card wide-card">
     <button class="modal-x" data-close-modal>×</button>
     <p class="kicker">— Settings —</p>
-    <h3>Contracts & Pinata</h3>
+    <h3>Contracts & NFT artwork</h3>
     <p class="muted small">Saved in this browser only. Leave a field empty to use the value from <code>js/config.js</code>.</p>
     <div class="row2">
       <label>GloomEuro (ERC-20) address <input id="st-gloom" placeholder="0x…"></label>
@@ -277,10 +277,9 @@
           <option value="31337">Hardhat (31337)</option>
         </select>
       </label>
-      <label>IPFS gateway <input id="st-gw" placeholder="https://gateway.pinata.cloud/ipfs/"></label>
     </div>
-    <label>Flower art CIDs — one per line: <code>Label | CID</code>
-      <textarea id="st-cids" rows="6" placeholder="Red Rose - reservation | bafy..."></textarea>
+    <label>Flower artwork — one per line: <code>Label | file name or URL</code>
+      <textarea id="st-cids" rows="6" placeholder="Red Rose - reservation | glowrist-rose-reservation.json"></textarea>
     </label>
     <div class="btn-row">
       <button class="btn btn-rose" id="st-save">Save</button>

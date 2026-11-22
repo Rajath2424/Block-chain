@@ -39,7 +39,7 @@
       <button data-tab="admin" class="role-tab hidden">Administrator</button>
     </nav>
     <div class="bar-actions">
-      <button class="icon-btn" id="btn-settings" title="Settings: contracts and Pinata CIDs">
+      <button class="icon-btn" id="btn-settings" title="Settings: contracts and certificate files">
         <svg viewBox="0 0 24 24" width="20" height="20"><path fill="currentColor" d="M19.4 13a7.6 7.6 0 0 0 0-2l2.1-1.6-2-3.5-2.5 1a7.4 7.4 0 0 0-1.7-1L15 3h-4l-.4 2.9a7.4 7.4 0 0 0-1.7 1l-2.5-1-2 3.5L6.6 11a7.6 7.6 0 0 0 0 2l-2.1 1.6 2 3.5 2.5-1c.5.4 1.1.7 1.7 1L11 21h4l.4-2.9c.6-.3 1.2-.6 1.7-1l2.5 1 2-3.5zM13 15.5A3.5 3.5 0 1 1 13 8.5a3.5 3.5 0 0 1 0 7z"/></svg>
       </button>
       <button class="btn btn-gold" id="btn-connect">
@@ -208,12 +208,12 @@
       <div class="panel">
         <div class="panel-head"><h3>Issue a certificate</h3><span class="tag">ERC-721 mint</span></div>
         <form id="form-issue" class="form">
-          <label>Certificate from Pinata
+          <label>Certificate
             <select name="pick" id="cert-pick"></select>
           </label>
           <div class="row-inline">
-            <label class="grow">Pinata CID <input name="cid" id="issue-cid" placeholder="bafy… / Qm…"></label>
-            <button type="button" class="btn btn-ghost btn-sm" id="btn-load-cid">Load from Pinata</button>
+            <label class="grow">Metadata URL <input name="cid" id="issue-cid" placeholder="TRX-MBS-001.json or https://…"></label>
+            <button type="button" class="btn btn-ghost btn-sm" id="btn-load-cid">Load preview</button>
           </div>
           <div class="grid3">
             <label>Security ID <input name="securityId" required></label>
@@ -329,7 +329,7 @@
     </div>
     <div>
       <h5>Platform</h5>
-      <p>ERC-721 security register<br>ERC-20 interest entitlements<br>MetaMask wallets · Pinata IPFS certificates</p>
+      <p>ERC-721 security register<br>ERC-20 interest entitlements<br>MetaMask wallets · certificate metadata on GitHub Pages</p>
     </div>
     <div>
       <h5>Important</h5>
@@ -372,9 +372,8 @@
             <option value="31337">Hardhat (31337)</option>
           </select>
         </label>
-        <label>IPFS gateway <input id="st-gw" placeholder="https://gateway.pinata.cloud/ipfs/"></label>
       </div>
-      <h4 class="sub">Pinata CIDs of your 5 certificates</h4>
+      <h4 class="sub">Metadata files of your 5 certificates</h4>
       <div id="st-certs" class="st-certs"></div>
       <div class="btn-row">
         <button class="btn btn-navy" id="st-save">Save settings</button>

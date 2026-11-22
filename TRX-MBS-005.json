@@ -1,0 +1,39 @@
+{
+  "name": "Tranchoryx MBS Certificate TRX-MBS-005",
+  "description": "One authorised mortgage-backed security recorded under the TRANCHORYX prototype platform. Ownership and lifecycle are tracked by the ERC-721 smart contract. Educational prototype only - not legal title, not a real financial instrument.",
+  "image": "https://rajath2424.github.io/Block-chain/TRX-MBS-005.png",
+  "attributes": [
+    {
+      "trait_type": "Issuer",
+      "value": "Society Credit Union"
+    },
+    {
+      "trait_type": "Security ID",
+      "value": "TRX-MBS-005"
+    },
+    {
+      "trait_type": "Series",
+      "value": "SERIES-C"
+    },
+    {
+      "trait_type": "Face Value",
+      "value": "C$75,000"
+    },
+    {
+      "trait_type": "Annual Coupon",
+      "value": "5.25%"
+    },
+    {
+      "trait_type": "Payments Per Year",
+      "value": 12
+    },
+    {
+      "trait_type": "Issue Date",
+      "value": "01-Mar-2026"
+    },
+    {
+      "trait_type": "Maturity Date",
+      "value": "01-Mar-2029"
+    }
+  ]
+}

@@ -98,7 +98,7 @@ async function loadSecurity(id) {
   return {
     id, securityId: s.securityId, series: s.series, faceValue: s.faceValue, couponBps: Number(s.couponBps),
     ppy: Number(s.paymentsPerYear), issueDate: s.issueDate, maturityDate: s.maturityDate, redeemed: s.redeemed,
-    lastHolder: s.lastHolder, cid: s.tokenCID, holder, life: Number(life), coupon, periods: Number(periods)
+    lastHolder: s.lastHolder, cid: s.metadataURI, holder, life: Number(life), coupon, periods: Number(periods)
   };
 }
 
@@ -204,7 +204,7 @@ function paperCert(s) {
 
 async function swapInImage(container, cid) {
   if (!cid) return;
-  const meta = await loadFromCID(cid);
+  const meta = await loadMeta(cid);
   if (meta && meta.image && !meta.failed) {
     const img = new Image();
     img.alt = "Certificate";
@@ -235,7 +235,7 @@ async function renderPortfolio() {
         <div class="btn-row">
           <button class="btn btn-ghost btn-sm" onclick="openTransfer(${s.id})">Transfer</button>
           <button class="btn btn-ghost btn-sm" onclick="verifyQuick('${fmt.esc(s.securityId)}')">Verify</button>
-          ${s.cid ? `<a class="btn btn-ghost btn-sm" href="${ipfsToHttp(s.cid)}" target="_blank" rel="noopener">IPFS</a>` : ""}
+          ${s.cid ? `<a class="btn btn-ghost btn-sm" href="${toUrl(s.cid)}" target="_blank" rel="noopener">Metadata</a>` : ""}
         </div>
       </div>
     </div>`).join("") : `<p class="empty">${S.approved ? "No certificates in this wallet yet." : "Once approved, certificates issued to you will show here."}</p>`;
@@ -368,7 +368,7 @@ async function doVerify(q, wallet) {
           <div><span>Face value</span><b>C$${Number(s.faceValue).toLocaleString()}</b></div>
           <div><span>Coupon</span><b>${(s.couponBps / 100).toFixed(2)}% · ${s.ppy} payment(s) a year · ${cad(s.coupon)} each</b></div>
           <div><span>Issue → maturity</span><b>${fmt.date(s.issueDate)} → ${fmt.date(s.maturityDate)}</b></div>
-          <div><span>Pinata CID</span><b class="mono">${s.cid ? `<a href="${ipfsToHttp(s.cid)}" target="_blank" rel="noopener">${fmt.esc(s.cid.slice(0, 18))}…</a>` : "—"}</b></div>
+          <div><span>Metadata</span><b class="mono">${s.cid ? `<a href="${toUrl(s.cid)}" target="_blank" rel="noopener">${fmt.esc(s.cid.split("/").pop())}</a>` : "—"}</b></div>
           <div><span>Contract</span><b><a class="mono" href="${explorerAddr(S.cfg.society.security)}" target="_blank" rel="noopener">${fmt.short(S.cfg.society.security)}</a></b></div>
         </div>
       </div>
@@ -385,7 +385,7 @@ function fillIssuePicker() {
   const certs = S.cfg.society.certificates || [];
   const issuedIds = new Set(S.all.map(s => s.securityId));
   $("#cert-pick").innerHTML = `<option value="">— choose one of your 5 certificates —</option>` + certs.map((c, i) =>
-    `<option value="${i}">${fmt.esc(c.label)}${issuedIds.has(c.securityId) ? " · already issued" : ""}${c.cid ? "" : " · (no CID yet)"}</option>`).join("");
+    `<option value="${i}">${fmt.esc(c.label)}${issuedIds.has(c.securityId) ? " · already issued" : ""}${c.file ? "" : " · (no file yet)"}</option>`).join("");
 }
 
 function parseLooseDate(v) {
@@ -408,7 +408,7 @@ function setupIssueForm() {
   $("#cert-pick").onchange = async () => {
     const c = (S.cfg.society.certificates || [])[Number($("#cert-pick").value)];
     if (!c) return;
-    f.cid.value = c.cid || "";
+    f.cid.value = c.file ? toUrl(c.file) : "";
     f.securityId.value = c.securityId || "";
     f.series.value = c.series || "";
     f.faceValue.value = c.faceValue || "";
@@ -429,11 +429,11 @@ function setupIssueForm() {
     if (!ethers.isAddress(holder)) return toast("Holder wallet is not valid.", "error");
     if (!(await S.sec.approvedInvestor(holder))) return toast("This wallet is not approved yet. Approve it first (Approval requests).", "error", 8000);
     if (Number(await S.sec.tokenIdOf(f.securityId.value.trim())) !== 0) return toast("This security ID has already been issued. The contract never issues the same ID twice.", "error", 8000);
-    if (!f.cid.value.trim() && !confirm("No Pinata CID is set. Issue without a certificate image?")) return;
+    if (!f.cid.value.trim() && !confirm("No metadata URL is set. Issue without a certificate image?")) return;
     const r = await sendTx(`Issue ${f.securityId.value}`, () => S.secW.issueSecurity(
       holder, f.securityId.value.trim(), f.series.value.trim(), BigInt(f.faceValue.value),
       Math.round(Number(f.coupon.value) * 100), Number(f.ppy.value),
-      fmt.toUnix(f.issueDate.value), fmt.toUnix(f.maturityDate.value), f.cid.value.trim()));
+      fmt.toUnix(f.issueDate.value), fmt.toUnix(f.maturityDate.value), toUrl(f.cid.value)));
     if (r) { toast("Certificate issued and sent to " + fmt.short(holder), "success"); refreshAll(); }
   };
 }
@@ -450,13 +450,13 @@ async function loadPreview(fromCid) {
   box.innerHTML = paperCert(draft());
   updateIssueCalc();
   if (!cid || !fromCid) return;
-  box.insertAdjacentHTML("beforeend", `<div class="meta">Loading from Pinata…</div>`);
-  const meta = await loadFromCID(cid);
+  box.insertAdjacentHTML("beforeend", `<div class="meta">Loading metadata…</div>`);
+  const meta = await loadMeta(cid);
   if (!meta || meta.failed) {
-    box.querySelector(".meta").textContent = "Could not load this CID from the gateway. Check the CID or gateway in Settings. Details from config.js are used.";
+    box.querySelector(".meta").textContent = "Could not load this file. Check the URL, or that the file is uploaded to GitHub. Details from config.js are used.";
     return;
   }
-  // fill form from metadata attributes, if the CID is a metadata JSON
+  // fill form from metadata attributes, if the link is a metadata JSON
   const map = {
     securityId: attr(meta, "Security ID", "SecurityID", "Security No"),
     series: attr(meta, "Series"),
@@ -474,7 +474,7 @@ async function loadPreview(fromCid) {
   if (map.issueDate) f.issueDate.value = map.issueDate;
   if (map.maturityDate) f.maturityDate.value = map.maturityDate;
   box.innerHTML = (meta.image ? `<img src="${meta.image}" alt="Certificate image" onerror="this.replaceWith(document.createTextNode(''))">` : paperCert(draft())) +
-    `<div class="meta"><b>${fmt.esc(meta.name || "Certificate")}</b><br>CID ${fmt.esc(cid)}${meta.isImageOnly ? "<br>(image CID — details come from the form)" : "<br>(metadata JSON — details filled from attributes)"}</div>`;
+    `<div class="meta"><b>${fmt.esc(meta.name || "Certificate")}</b><br>${fmt.esc(toUrl(cid))}${meta.isImageOnly ? "<br>(image link — details come from the form)" : "<br>(metadata JSON — details filled from attributes)"}</div>`;
   updateIssueCalc();
 }
 
@@ -596,9 +596,8 @@ function openSettings() {
   $("#st-sec").value = c.society.security || "";
   $("#st-int").value = c.society.interest || "";
   $("#st-chain").value = String(c.network.chainId);
-  $("#st-gw").value = c.ipfsGateway || "";
   $("#st-certs").innerHTML = (c.society.certificates || []).map((x, i) =>
-    `<div class="st-row"><span>${fmt.esc(x.label)}</span><input data-i="${i}" value="${fmt.esc(x.cid || "")}" placeholder="Pinata CID"></div>`).join("");
+    `<div class="st-row"><span>${fmt.esc(x.label)}</span><input data-i="${i}" value="${fmt.esc(x.file || "")}" placeholder="TRX-MBS-00X.json or full URL"></div>`).join("");
   openModal("modal-settings");
 }
 
@@ -607,10 +606,9 @@ function saveSettingsForm() {
   const names = { 11155111: "Sepolia", 1337: "Ganache", 5777: "Ganache", 31337: "Hardhat" };
   const sec = $("#st-sec").value.trim(), int = $("#st-int").value.trim();
   if ((sec && !ethers.isAddress(sec)) || (int && !ethers.isAddress(int))) return toast("One of the addresses is not valid.", "error");
-  const certs = (getConfig().society.certificates || []).map((c, i) => ({ ...c, cid: ($(`#st-certs input[data-i="${i}"]`) || {}).value?.trim() || "" }));
+  const certs = (getConfig().society.certificates || []).map((c, i) => ({ ...c, file: ($(`#st-certs input[data-i="${i}"]`) || {}).value?.trim() || "" }));
   saveSettings({
     network: { chainId: chain, name: names[chain] || "Local", explorer: chain === 11155111 ? "https://sepolia.etherscan.io" : "#" },
-    ipfsGateway: $("#st-gw").value.trim(),
     society: { security: sec, interest: int, certificates: certs }
   });
   toast("Settings saved", "success");

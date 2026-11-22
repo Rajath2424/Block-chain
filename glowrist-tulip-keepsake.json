@@ -1,0 +1,23 @@
+{
+  "name": "Glowrist Tulip - Botanical Keepsake",
+  "description": "Keepsake of tulips collected from GLOWRIST, Dublin 2. Given after the reservation NFT is used.",
+  "image": "https://rajath2424.github.io/Block-chain/glowrist-tulip-keepsake.png",
+  "attributes": [
+    {
+      "trait_type": "Shop",
+      "value": "Glowrist, Dublin 2"
+    },
+    {
+      "trait_type": "Flower",
+      "value": "Tulip"
+    },
+    {
+      "trait_type": "Botanical name",
+      "value": "Tulipa gesneriana"
+    },
+    {
+      "trait_type": "Type",
+      "value": "Keepsake"
+    }
+  ]
+}

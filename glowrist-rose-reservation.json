@@ -1,0 +1,23 @@
+{
+  "name": "Glowrist Red Rose - Pre-order Reservation",
+  "description": "Reservation of red rose stems from a named GLOWRIST harvest batch. Money is held in escrow by the smart contract. Present this NFT at Glowrist, Dublin 2 to collect your flowers.",
+  "image": "https://rajath2424.github.io/Block-chain/glowrist-rose-reservation.png",
+  "attributes": [
+    {
+      "trait_type": "Shop",
+      "value": "Glowrist, Dublin 2"
+    },
+    {
+      "trait_type": "Flower",
+      "value": "Red Rose"
+    },
+    {
+      "trait_type": "Botanical name",
+      "value": "Rosa 'Grand Prix'"
+    },
+    {
+      "trait_type": "Type",
+      "value": "Reservation"
+    }
+  ]
+}

@@ -1,0 +1,23 @@
+{
+  "name": "Glowrist Tulip - Pre-order Reservation",
+  "description": "Reservation of tulip stems from a named GLOWRIST harvest batch. Money is held in escrow by the smart contract. Present this NFT at Glowrist, Dublin 2 to collect your flowers.",
+  "image": "https://rajath2424.github.io/Block-chain/glowrist-tulip-reservation.png",
+  "attributes": [
+    {
+      "trait_type": "Shop",
+      "value": "Glowrist, Dublin 2"
+    },
+    {
+      "trait_type": "Flower",
+      "value": "Tulip"
+    },
+    {
+      "trait_type": "Botanical name",
+      "value": "Tulipa gesneriana"
+    },
+    {
+      "trait_type": "Type",
+      "value": "Reservation"
+    }
+  ]
+}

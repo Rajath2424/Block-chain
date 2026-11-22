@@ -103,7 +103,7 @@ function batchObj(id, b) {
     id, name: b.name, origin: b.origin, totalStems: b.totalStems, reservedStems: b.reservedStems,
     pricePerStem: b.pricePerStem, growerCostPerStem: b.growerCostPerStem, deliveryDeadline: b.deliveryDeadline,
     grower: b.grower, milestonesPaid: Number(b.milestonesPaid), escrowBalance: b.escrowBalance, growerPaid: b.growerPaid,
-    status: Number(b.status), reservationCID: b.reservationCID, keepsakeCID: b.keepsakeCID
+    status: Number(b.status), reservationURI: b.reservationURI, keepsakeURI: b.keepsakeURI
   };
 }
 
@@ -254,6 +254,7 @@ async function renderGarden() {
       <div class="ticket">
         <div class="ticket-stub"><b>${Number(r.stems).toLocaleString()}</b><span>stems</span></div>
         <div class="ticket-main">
+          <div class="ticket-pic" data-token="${r.id}"></div>
           <h4>${fmt.esc(b.name || "Batch #" + r.batchId)}</h4>
           <p>Reservation NFT #${r.id} · ${fmt.esc(b.origin || "")}</p>
           <p>Paid into escrow: <b>${eur(r.amountPaid)}</b> · deadline ${fmt.date(b.deliveryDeadline)}</p>
@@ -265,7 +266,7 @@ async function renderGarden() {
 
   const keepHTML = keepsakes.length ? keepsakes.map(k => {
     const b = G.batches.find(x => x.id === k.batchId) || {};
-    return `<div class="polaroid" data-cid="${fmt.esc(b.keepsakeCID || "")}" data-flower="${flowerFor(b.name)}">
+    return `<div class="polaroid" data-cid="${fmt.esc(b.keepsakeURI || "")}" data-flower="${flowerFor(b.name)}">
       <div class="pic">${bouquetSVG(flowerFor(b.name), 120)}</div>
       <p>${fmt.esc(b.name || "Keepsake")}</p>
       <small>NFT #${k.id} · ${fmt.esc(b.origin || "")}</small>
@@ -278,11 +279,22 @@ async function renderGarden() {
       <div><h3 class="col-title">Keepsakes</h3><div class="keepsakes">${keepHTML}</div></div>
     </div>`;
 
-  // load keepsake pictures from Pinata
+  // load reservation NFT pictures straight from tokenURI (same data MetaMask reads)
+  $all(".ticket-pic[data-token]").forEach(async el => {
+    try {
+      const uri = await G.pre.tokenURI(el.dataset.token);
+      if (!uri) { el.remove(); return; }
+      const meta = await loadMeta(uri);
+      if (meta && meta.image && !meta.failed) el.innerHTML = `<img src="${meta.image}" alt="Reservation NFT" onerror="this.parentElement.remove()">`;
+      else el.remove();
+    } catch (e) { el.remove(); }
+  });
+
+  // load keepsake pictures (metadata hosted on GitHub Pages)
   $all(".polaroid[data-cid]").forEach(async el => {
     const cid = el.dataset.cid;
     if (!cid) return;
-    const meta = await loadFromCID(cid);
+    const meta = await loadMeta(cid);
     if (meta && meta.image && !meta.failed) {
       el.querySelector(".pic").innerHTML = `<img src="${meta.image}" alt="Keepsake flower" onerror="this.remove()">`;
     }
@@ -356,8 +368,8 @@ async function verifyStage(id) {
 /* ---------------- shop office ---------------- */
 
 function fillCidPickers() {
-  const opts = `<option value="">— choose from Pinata list —</option>` +
-    (G.cfg.glowrist.flowerCIDs || []).filter(c => c.cid).map(c => `<option value="${fmt.esc(c.cid)}">${fmt.esc(c.label)}</option>`).join("");
+  const opts = `<option value="">— choose flower artwork —</option>` +
+    (G.cfg.glowrist.flowerArt || []).filter(c => c.file).map(c => `<option value="${fmt.esc(toUrl(c.file))}">${fmt.esc(c.label)}</option>`).join("");
   $all(".cid-pick").forEach(sel => {
     sel.innerHTML = opts;
     sel.onchange = () => { sel.form.elements[sel.dataset.target].value = sel.value; };
@@ -388,7 +400,7 @@ function setupOfficeForms() {
     const r = await sendTx("Create batch", () => G.preW.createBatch(
       f.name.value.trim(), f.origin.value.trim(), BigInt(f.stems.value),
       fmt.toCents(f.price.value), fmt.toCents(f.cost.value), deadline,
-      f.grower.value.trim(), f.resCid.value.trim(), f.keepCid.value.trim()));
+      f.grower.value.trim(), toUrl(f.resCid.value), toUrl(f.keepCid.value)));
     if (r) { fb.reset(); setupOfficeFormsDefaults(); refreshAll(); }
   };
 
@@ -443,8 +455,7 @@ function openSettings() {
   $("#st-gloom").value = c.glowrist.gloomEuro || "";
   $("#st-pre").value = c.glowrist.preorder || "";
   $("#st-chain").value = String(c.network.chainId);
-  $("#st-gw").value = c.ipfsGateway || "";
-  $("#st-cids").value = (c.glowrist.flowerCIDs || []).map(x => `${x.label} | ${x.cid || ""}`).join("\n");
+  $("#st-cids").value = (c.glowrist.flowerArt || []).map(x => `${x.label} | ${x.file || ""}`).join("\n");
   openModal("modal-settings");
 }
 
@@ -452,15 +463,14 @@ function saveSettingsForm() {
   const chain = Number($("#st-chain").value);
   const names = { 11155111: "Sepolia", 1337: "Ganache", 5777: "Ganache", 31337: "Hardhat" };
   const cids = $("#st-cids").value.split("\n").map(l => l.trim()).filter(Boolean).map(l => {
-    const [label, cid] = l.split("|").map(s => (s || "").trim());
-    return { label, cid };
+    const [label, file] = l.split("|").map(s => (s || "").trim());
+    return { label, file };
   });
   const gloom = $("#st-gloom").value.trim(), pre = $("#st-pre").value.trim();
   if ((gloom && !ethers.isAddress(gloom)) || (pre && !ethers.isAddress(pre))) return toast("One of the addresses is not valid.", "error");
   saveSettings({
     network: { chainId: chain, name: names[chain] || "Local", explorer: chain === 11155111 ? "https://sepolia.etherscan.io" : "#" },
-    ipfsGateway: $("#st-gw").value.trim(),
-    glowrist: { gloomEuro: gloom, preorder: pre, flowerCIDs: cids }
+    glowrist: { gloomEuro: gloom, preorder: pre, flowerArt: cids }
   });
   toast("Settings saved", "success");
   setTimeout(() => location.reload(), 500);
