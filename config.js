@@ -18,7 +18,7 @@ window.APP_CONFIG = {
   },
 
   // Pinata public gateway (or your own dedicated gateway)
-  ipfsGateway: "https://gateway.pinata.cloud/ipfs/",
+  ipfsGateway: "https://coffee-dear-swordtail-806.mypinata.cloud/ipfs/",
 
   // ---------------------------------------------------------------
   //  GLOWRIST  (florist)
@@ -31,8 +31,8 @@ window.APP_CONFIG = {
     // "reservation" = picture on the pre-order NFT
     // "keepsake"    = picture the customer gets after collecting
     flowerCIDs: [
-      { label: "Red Rose - reservation",   cid: "" },
-      { label: "Red Rose - keepsake",      cid: "" },
+      { label: "Red Rose - reservation",   cid: "bafybeiggu2gd4oeqwuvfw3qounfieii4v4n2aba3vlq7d6xnmjejfxkzwq/glowrist-rose-reservation.json" },
+      { label: "Red Rose - keepsake",      cid: "bafybeiggu2gd4oeqwuvfw3qounfieii4v4n2aba3vlq7d6xnmjejfxkzwq/glowrist-rose-keepsake.json" },
       { label: "Peony - reservation",      cid: "" },
       { label: "Peony - keepsake",         cid: "" },
       { label: "Tulip - reservation",      cid: "" },
